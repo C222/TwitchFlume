@@ -125,6 +125,13 @@ func (self *WsIrc) messageListener(){
   for {
     n, e = self.WS.Read(msg)
     handleError(e, false)
-    _ = self.OnMessage(string(msg[:n]))
+    chat_line := string(msg[:n])
+    if strings.HasPrefix(chat_line, "PING") {
+      n, e = self.WS.Write([]byte("PONG\n"))
+      log.Info("PONG!!!!!!!!!!")
+    handleError(e, false)
+    } else {
+      _ = self.OnMessage(chat_line)
+    }
   }
 }
