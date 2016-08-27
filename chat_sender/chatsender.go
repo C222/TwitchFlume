@@ -96,8 +96,8 @@ func (self *ChatSender) SendLine(msg string) bool {
     chat_line, e := ParseLine(msg)
     if e == nil{
       log.WithFields(logrus.Fields{
-        "Channel": chat_line.Channel,
-      }).Info("Message Recieved")
+        "chat": chat_line,
+      }).Debug("Message Parsed")
 
       uri := fmt.Sprintf("http://logs-01.loggly.com/inputs/%s/tag/%s/", self.Key, chat_line.Channel)
 

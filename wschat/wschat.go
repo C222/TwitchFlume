@@ -130,7 +130,12 @@ func (self *WsIrc) messageListener(){
     n, e = self.WS.Read(msg)
     handleError(e, false)
     chat_line = string(msg[:n])
-    log.WithFields(logrus.Fields{"i":i}).Info("Count")
+    if i % 10 == 0 {
+      log.WithFields(logrus.Fields{
+        "i":i,
+        "channel": self.Channel,
+      }).Info("Message Count")
+    }
     i += 1
     if strings.HasPrefix(chat_line, "PING") {
       n, e = self.WS.Write([]byte("PONG\n"))
