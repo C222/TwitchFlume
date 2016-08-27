@@ -1,9 +1,11 @@
 package chatsender
 
-// import "net/http"
+import "net/http"
 import "github.com/Sirupsen/logrus"
 import logger "../logger"
 import "strings"
+import "fmt"
+import "encoding/json"
 
 var log = logger.GetLogger()
 
@@ -34,6 +36,13 @@ func (self *ChatSender) SendLine(msg string) bool {
     log.WithFields(logrus.Fields{
       "line": chat_line,
     }).Info("Message Recieved")
+
+    uri := fmt.Sprintf("http://logs-01.loggly.com/inputs/%s/tag/%s/", self.Key, chat_line.Channel)
+
+    json_s, _ := json.Marshal(chat_line)
+
+    _, _ = http.Post(uri, "application/json", strings.NewReader(string(json_s)))
+
     return true
   }
   return false
