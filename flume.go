@@ -6,6 +6,7 @@ import wschat "./wschat"
 import "encoding/json"
 import "io/ioutil"
 import "./chat_sender"
+import "runtime"
 
 var log = logger.GetLogger()
 
@@ -41,5 +42,7 @@ func main() {
     ws := wschat.WsIrc{channel, nil, cs.SendLine}
     ws.Start()
   }
-  for {}
+  for {
+    runtime.Gosched()
+  }
 }
