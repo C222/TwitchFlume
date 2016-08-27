@@ -85,14 +85,13 @@ func getWsUri(channel string) (string, error) {
 
 type WsIrc struct {
   Channel string
-  Key string
   WS *websocket.Conn
+  OnMessage func(string) bool
 }
 
 func (self *WsIrc) Start() {
   log.WithFields(logrus.Fields{
     "channel": self.Channel,
-    "loggly_key": self.Key,
   }).Info("Starting new connection.")
 
   uri, e := getWsUri(self.Channel)
@@ -126,6 +125,6 @@ func (self *WsIrc) messageListener(){
   for {
     n, e = self.WS.Read(msg)
     handleError(e, false)
-    fmt.Printf("Received: %s.\n", msg[:n])
+    _ = self.OnMessage(string(msg[:n]))
   }
 }

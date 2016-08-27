@@ -5,7 +5,7 @@ import logger "./logger"
 import wschat "./wschat"
 import "encoding/json"
 import "io/ioutil"
-import "time"
+import "./chat_sender"
 
 var log = logger.GetLogger()
 
@@ -35,9 +35,11 @@ func main() {
     "loggly_key": config.LogglyKey,
   }).Info("Config loaded.")
 
+  cs := chatsender.ChatSender{config.LogglyKey}
+
   for _, channel := range config.Channels{
-    ws := wschat.WsIrc{channel, config.LogglyKey, nil}
+    ws := wschat.WsIrc{channel, nil, cs.SendLine}
     ws.Start()
   }
-  time.Sleep(10 * time.Second)
+  for {}
 }
