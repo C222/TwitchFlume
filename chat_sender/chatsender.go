@@ -32,6 +32,7 @@ type ChatLine struct {
   Tags
   Channel string
   Message string
+  Username string
 }
 
 func handleError(e error, die bool) {
@@ -87,6 +88,7 @@ func ParseLine(msg string) (*ChatLine, error) {
   }
 
   chat_line.Channel = strings.TrimLeft(latter[0], "#")
+  chat_line.Username = strings.SplitN(strings.SplitN(split[0], " :", 2)[1], "!", 2)[0]
   chat_line.Message = strings.TrimRight(latter[1], "\n\r")
   return &chat_line, nil
 }
