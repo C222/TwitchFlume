@@ -34,8 +34,26 @@ type ChatLine struct {
   Message string
 }
 
-func ParseLine(msg string) *ChatLine {
+func handleError(e error, die bool) {
+  if e != nil {
+    if die {
+      log.WithFields(logrus.Fields{
+        "err": e,
+      }).Fatal("WsChat Fatal")
+    } else {
+      log.WithFields(logrus.Fields{
+        "err": e,
+      }).Error("ChatSender Error")
+    }
+  }
+}
+
+func ParseLine(msg string) (*ChatLine, error) {
   var chat_line ChatLine
+
+  if strings.Count(msg, ":") < 2 {
+    return nil, fmt.Errorf("Malformed Chat Line")
+  }
   split := strings.Split(msg, " PRIVMSG ")
   latter := strings.SplitN(split[1], " :", 2)
   tags := strings.TrimLeft(strings.SplitN(split[0], " :", 2)[0], "@")
@@ -70,23 +88,30 @@ func ParseLine(msg string) *ChatLine {
 
   chat_line.Channel = strings.TrimLeft(latter[0], "#")
   chat_line.Message = strings.TrimRight(latter[1], "\n\r")
-  return &chat_line
+  return &chat_line, nil
 }
 
 func (self *ChatSender) SendLine(msg string) bool {
   if strings.Contains(msg, " PRIVMSG "){
-    chat_line := ParseLine(msg)
-    log.WithFields(logrus.Fields{
-      "line": chat_line,
-    }).Info("Message Recieved")
+    chat_line, e := ParseLine(msg)
+    if e == nil{
+      log.WithFields(logrus.Fields{
+        "Channel": chat_line.Channel,
+      }).Info("Message Recieved")
 
-    uri := fmt.Sprintf("http://logs-01.loggly.com/inputs/%s/tag/%s/", self.Key, chat_line.Channel)
+      uri := fmt.Sprintf("http://logs-01.loggly.com/inputs/%s/tag/%s/", self.Key, chat_line.Channel)
 
-    json_s, _ := json.Marshal(chat_line)
+      json_s, e := json.Marshal(chat_line)
+      handleError(e, false)
 
-    _, _ = http.Post(uri, "application/json", strings.NewReader(string(json_s)))
+      resp, e := http.Post(uri, "application/json", strings.NewReader(string(json_s)))
+      handleError(e, false)
+      log.WithFields(logrus.Fields{
+        "resp": resp,
+      }).Debug("Message Sent")
 
-    return true
+      return true
+    }
   }
   return false
 }

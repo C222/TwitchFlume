@@ -5,6 +5,7 @@ import "fmt"
 import "encoding/json"
 import "io/ioutil"
 import "strings"
+import "runtime"
 
 import "github.com/Sirupsen/logrus"
 import websocket "golang.org/x/net/websocket"
@@ -105,9 +106,7 @@ func (self *WsIrc) Start() {
   self.WS, e = websocket.Dial(uri, "", origin)
   handleError(e, true)
 
-  go self.messageListener()
-
-  _, err := self.WS.Write([]byte("CAP REQ :twitch.tv/tags twitch.tv/commands\n"))
+  _, err := self.WS.Write([]byte("CAP REQ :twitch.tv/tags\n"))
   handleError(err, false)
   _, err = self.WS.Write([]byte("PASS blah\n"))
   handleError(err, false)
@@ -116,22 +115,30 @@ func (self *WsIrc) Start() {
 
   _, err = self.WS.Write([]byte(fmt.Sprintf("JOIN #%s\n", strings.ToLower(self.Channel))))
   handleError(err, true)
+
+  go self.messageListener()
 }
 
 func (self *WsIrc) messageListener(){
   var msg = make([]byte, 65535)
   var n int
   var e error
+  var i int = 0
+  var chat_line string
   for {
+    runtime.KeepAlive(self)
     n, e = self.WS.Read(msg)
     handleError(e, false)
-    chat_line := string(msg[:n])
+    chat_line = string(msg[:n])
+    log.WithFields(logrus.Fields{"i":i}).Info("Count")
+    i += 1
     if strings.HasPrefix(chat_line, "PING") {
       n, e = self.WS.Write([]byte("PONG\n"))
-      log.Debug("PING/PONG")
+      log.Info("PING/PONG")
     handleError(e, false)
     } else {
-      _ = self.OnMessage(chat_line)
+      go self.OnMessage(chat_line)
     }
+    runtime.Gosched()
   }
 }
