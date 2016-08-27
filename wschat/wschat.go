@@ -128,7 +128,7 @@ func (self *WsIrc) messageListener(){
     chat_line := string(msg[:n])
     if strings.HasPrefix(chat_line, "PING") {
       n, e = self.WS.Write([]byte("PONG\n"))
-      log.Info("PONG!!!!!!!!!!")
+      log.Debug("PING/PONG")
     handleError(e, false)
     } else {
       _ = self.OnMessage(chat_line)
