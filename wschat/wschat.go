@@ -126,7 +126,7 @@ func (self *WsIrc) messageListener() {
 	var i int = 0
 	var chat_line string
 	for {
-		runtime.KeepAlive(self)
+		// runtime.KeepAlive(self)
 		n, e = self.WS.Read(msg)
 		handleError(e, false)
 		chat_line = string(msg[:n])
