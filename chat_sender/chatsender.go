@@ -55,7 +55,7 @@ func ParseLine(msg string) (*ChatLine, error) {
 	if len(split_line) != 3 || !strings.HasSuffix(msg, "\r\n") {
 		return nil, fmt.Errorf("Malformed Chat Line")
 	}
-	tags := split_line[0]
+	tags := strings.TrimLeft(split_line[0], "@")
 	for _, tag := range strings.Split(tags, ";") {
 		tag_split := strings.SplitN(tag, "=", 2)
 		switch tag_split[0] {
@@ -107,6 +107,7 @@ func (self *ChatSender) SendLine(msg string) bool {
 
 			resp, e := http.Post(uri, "application/json", strings.NewReader(string(json_s)))
 			handleError(e, false)
+      defer resp.Body.Close()
 			log.WithFields(logrus.Fields{
 				"resp": resp,
 			}).Debug("Message Sent")

@@ -139,7 +139,9 @@ func (self *WsIrc) messageListener() {
 		i += 1
 		if strings.HasPrefix(chat_line, "PING") {
 			n, e = self.WS.Write([]byte("PONG\n"))
-			log.Info("PING/PONG")
+			log.WithFields(logrus.Fields{
+				"channel": self.Channel,
+			}).Info("PING/PONG")
 			handleError(e, false)
 		} else {
 			go self.OnMessage(chat_line)
