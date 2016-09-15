@@ -48,8 +48,8 @@ func handleError(e error, die bool) {
 	}
 }
 
-func getWsUri(channel string) (string, error) {
-	query_uri := fmt.Sprintf("https://api.twitch.tv/api/channels/%s/chat_properties", channel)
+func getWsUri(channel string, clientid string) (string, error) {
+	query_uri := fmt.Sprintf("https://api.twitch.tv/api/channels/%s/chat_properties?client_id=%s", channel, clientid)
 
 	log.WithFields(logrus.Fields{
 		"query_uri": query_uri,
@@ -87,6 +87,7 @@ func getWsUri(channel string) (string, error) {
 type WsIrc struct {
 	Channel   string
 	WS        *websocket.Conn
+	ClientID  string
 	OnMessage func(string) bool
 }
 
@@ -95,7 +96,7 @@ func (self *WsIrc) Start() {
 		"channel": self.Channel,
 	}).Info("Starting new connection.")
 
-	uri, e := getWsUri(self.Channel)
+	uri, e := getWsUri(self.Channel, self.ClientID)
 	handleError(e, true)
 
 	log.WithFields(logrus.Fields{

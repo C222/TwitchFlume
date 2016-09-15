@@ -1,4 +1,5 @@
 {
   "channels": [],
-  "loggly-key": "ADDKEYHERE"
+  "loggly-key": "ADDKEYHERE",
+  "client-id": ""
 }

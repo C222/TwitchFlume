@@ -13,6 +13,7 @@ var log = logger.GetLogger()
 type Config struct {
 	Channels  []string `json:"channels"`
 	LogglyKey string   `json:"loggly-key"`
+	ClientID string   `json:"client-id"`
 }
 
 func main() {
@@ -34,12 +35,13 @@ func main() {
 	log.WithFields(logrus.Fields{
 		"channels":   config.Channels,
 		"loggly_key": config.LogglyKey,
+		"client_id": config.ClientID,
 	}).Info("Config loaded.")
 
 	cs := chatsender.ChatSender{config.LogglyKey}
 
 	for _, channel := range config.Channels {
-		ws := wschat.WsIrc{channel, nil, cs.SendLine}
+		ws := wschat.WsIrc{channel, nil, config.ClientID, cs.SendLine}
 		ws.Start()
 	}
 	for {
