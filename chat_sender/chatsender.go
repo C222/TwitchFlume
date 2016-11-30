@@ -35,7 +35,7 @@ type ChatLine struct {
 	Username string
 }
 
-func handleError(e error, die bool) {
+func handleError(e error, die bool) bool {
 	if e != nil {
 		if die {
 			log.WithFields(logrus.Fields{
@@ -46,7 +46,9 @@ func handleError(e error, die bool) {
 				"err": e,
 			}).Error("ChatSender Error")
 		}
+		return true
 	}
+	return false
 }
 
 func ParseLine(msg string) (*ChatLine, error) {
@@ -106,13 +108,16 @@ func (self *ChatSender) SendLine(msg string) bool {
 			handleError(e, false)
 
 			resp, e := http.Post(uri, "application/json", strings.NewReader(string(json_s)))
-			handleError(e, false)
-      defer resp.Body.Close()
-			log.WithFields(logrus.Fields{
-				"resp": resp,
-			}).Debug("Message Sent")
+			if handleError(e, false) == false {
+				defer resp.Body.Close()
+				log.WithFields(logrus.Fields{
+					"resp": resp,
+					}).Debug("Message Sent")
 
-			return true
+				return true
+			} else {
+				return false
+			}
 		}
 	}
 	return false
